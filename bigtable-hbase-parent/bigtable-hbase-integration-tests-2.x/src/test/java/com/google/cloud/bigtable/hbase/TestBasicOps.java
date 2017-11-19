@@ -21,6 +21,7 @@ import com.google.common.base.Stopwatch;
 
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
+import org.apache.hadoop.hbase.DoNotRetryIOException;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
@@ -157,13 +158,13 @@ public class TestBasicOps extends AbstractTest {
     testPutGetDeleteExists((10 << 20) + 1, true, true); // 10 MB + 1
   }
 
-  @Test
+  @Test //(expected = DoNotRetryIOException.class)
   @Category(KnownEmulatorGap.class)
   public void testPutAlmostTooBigValue() throws IOException {
     testPutGetDeleteExists(10 << 20, true, true); // 10 MB
   }
 
-  @Test
+  @Test //(expected = DoNotRetryIOException.class)
   @Category(KnownEmulatorGap.class)
   /** Run a large value ten times for performance logging purposes */
   public void testPutAlmostTooBigValueTenTimes() throws IOException {

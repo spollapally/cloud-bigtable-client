@@ -193,7 +193,7 @@ public class TestPut extends AbstractTest {
     table.close();
   }
 
-  @Test(expected = RetriesExhaustedWithDetailsException.class)
+  @Test(expected = NoSuchColumnFamilyException.class)
   @Category(KnownGap.class)
   public void testIOExceptionOnFailedPut() throws Exception {
     Table table = getConnection().getTable(sharedTestEnv.getDefaultTableName());
