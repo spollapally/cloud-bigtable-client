@@ -216,7 +216,7 @@ public class TestCheckAndMutate extends AbstractTest {
     // Put then again
     Put put = new Put(rowKey1).addColumn(SharedTestEnvRule.COLUMN_FAMILY, qual, value);
     expectedException.expect(DoNotRetryIOException.class);
-    expectedException.expectMessage("Action's getRow must match the passed row");
+    expectedException.expectMessage("Action's getRow must match");
     table.checkAndPut(rowKey2, SharedTestEnvRule.COLUMN_FAMILY, qual, null, put);
 
     table.close();
@@ -233,7 +233,7 @@ public class TestCheckAndMutate extends AbstractTest {
     // Put then again
     Delete delete = new Delete(rowKey1).addColumns(SharedTestEnvRule.COLUMN_FAMILY, qual);
     expectedException.expect(DoNotRetryIOException.class);
-    expectedException.expectMessage("Action's getRow must match the passed row");
+    expectedException.expectMessage("Action's getRow must match");
     table.checkAndDelete(rowKey2, SharedTestEnvRule.COLUMN_FAMILY, qual, null, delete);
 
     table.close();
