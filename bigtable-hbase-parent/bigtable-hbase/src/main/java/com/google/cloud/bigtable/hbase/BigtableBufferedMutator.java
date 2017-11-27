@@ -208,8 +208,12 @@ public class BigtableBufferedMutator implements BufferedMutator {
    * object to cloud bigtable proto and the async call both take time (microseconds worth) that
    * could be parallelized, or at least removed from the user's thread.
    */
-  @SuppressWarnings("unchecked")
   private void offer(Mutation mutation) {
+    asyncOffer(mutation);
+  }
+
+  @SuppressWarnings("unchecked")
+  public ListenableFuture<?> asyncOffer(Mutation mutation) {
     ListenableFuture<?> future = null;
     try {
       if (mutation == null) {
@@ -232,9 +236,11 @@ public class BigtableBufferedMutator implements BufferedMutator {
       // and inflight rpc count.
       future = Futures.immediateFailedFuture(e);
     }
+    
     Futures.addCallback(future, new ExceptionCallback(mutation), MoreExecutors.directExecutor());
+    return future;
   }
-
+  
   private void addGlobalException(Row mutation, Throwable t) {
     synchronized (globalExceptions) {
       globalExceptions.add(new MutationException(mutation, t));
