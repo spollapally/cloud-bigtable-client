@@ -9,31 +9,21 @@
 package com.google.cloud.bigtable.hbase2_x;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.AbstractBigtableAdmin;
 import org.apache.hadoop.hbase.client.AbstractBigtableConnection;
 import org.apache.hadoop.hbase.client.Admin;
-import org.apache.hadoop.hbase.client.MasterSwitchType;
-import org.apache.hadoop.hbase.client.SnapshotDescription;
+import org.apache.hadoop.hbase.client.RegionLocator;
 import org.apache.hadoop.hbase.client.TableBuilder;
-import org.apache.hadoop.hbase.client.security.SecurityCapability;
-import org.apache.hadoop.hbase.quotas.QuotaFilter;
-import org.apache.hadoop.hbase.quotas.QuotaRetriever;
-import org.apache.hadoop.hbase.quotas.QuotaSettings;
 import org.apache.hadoop.hbase.security.User;
 
 /**
- * HBase 1.x specific implementation of {@link AbstractBigtableConnection}.
+ * HBase 2.x specific implementation of {@link AbstractBigtableConnection}.
  * @author sduskis
  * @version $Id: $Id
  */
-@SuppressWarnings("deprecation")
 public class BigtableConnection extends AbstractBigtableConnection {
 
   /**
@@ -59,6 +49,32 @@ public class BigtableConnection extends AbstractBigtableConnection {
         getDisabledTables());
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public RegionLocator getRegionLocator(TableName tableName) throws IOException {
+    for (RegionLocator locator : locatorCache) {
+      if (locator.getName().equals(tableName)) {
+        return locator;
+      }
+    }
+
+    RegionLocator newLocator =
+        new BigtableRegionLocator2x(tableName, getOptions(),  getSession().getDataClient());
+
+    if (locatorCache.add(newLocator)) {
+      return newLocator;
+    }
+
+    for (RegionLocator locator : locatorCache) {
+      if (locator.getName().equals(tableName)) {
+        return locator;
+      }
+    }
+
+    throw new IllegalStateException(newLocator + " was supposed to be in the cache");
+  }
+
+  
   @Override
   public TableBuilder getTableBuilder(TableName arg0, ExecutorService arg1) {
     throw new UnsupportedOperationException("getTableBuilder"); // TODO
