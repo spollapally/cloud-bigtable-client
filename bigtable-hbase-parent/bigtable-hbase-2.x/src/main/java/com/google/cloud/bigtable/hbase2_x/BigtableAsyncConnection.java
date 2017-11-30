@@ -123,7 +123,7 @@ public class BigtableAsyncConnection implements AsyncConnection, Closeable {
     //BigtableRegionLocator2x regionLocator = new BigtableRegionLocator2x(tableName, connection.getO, connection.getSession().getDataClient());
    //TODO : discuss approach. Will need to consider caching with this approach
     
-    final BigtableRegionLocator2x regionLocator = null;
+    final BigtableRegionLocator2_x regionLocator = null;
     
     AsyncTableRegionLocator asyncTableRegionLocator = new AsyncTableRegionLocator() {
       

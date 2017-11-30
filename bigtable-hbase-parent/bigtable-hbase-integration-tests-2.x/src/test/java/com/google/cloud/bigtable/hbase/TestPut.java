@@ -219,17 +219,17 @@ public class TestPut extends AbstractTest {
     Put put = new Put(rowKey);
     put.addColumn(COLUMN_FAMILY, goodQual, goodValue);
     put.addColumn(badfamily, badQual, badValue);
-    RetriesExhaustedWithDetailsException thrownException = null;
+    NoSuchColumnFamilyException thrownException = null;
     try {
       table.put(put);
-    } catch (RetriesExhaustedWithDetailsException e) {
+    } catch (NoSuchColumnFamilyException e) {
       thrownException = e;
     }
     Assert.assertNotNull("Exception should have been thrown", thrownException);
-    Assert.assertEquals("Expecting one exception", 1, thrownException.getNumExceptions());
-    Assert.assertArrayEquals("Row key", rowKey, thrownException.getRow(0).getRow());
-    Assert.assertTrue("Cause: NoSuchColumnFamilyException",
-        thrownException.getCause(0) instanceof NoSuchColumnFamilyException);
+    //Assert.assertEquals("Expecting one exception", 1, thrownException.getNumExceptions());
+    //Assert.assertArrayEquals("Row key", rowKey, thrownException.getRow.getRow());
+    //Assert.assertTrue("Cause: NoSuchColumnFamilyException",
+    //    thrownException.getCause() instanceof NoSuchColumnFamilyException);
 
     Get get = new Get(rowKey);
     Result result = table.get(get);

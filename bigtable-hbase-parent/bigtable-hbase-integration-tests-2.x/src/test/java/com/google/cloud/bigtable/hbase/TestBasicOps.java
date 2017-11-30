@@ -155,16 +155,16 @@ public class TestBasicOps extends AbstractTest {
   @Test(expected = IllegalArgumentException.class)
   @Category(KnownEmulatorGap.class)
   public void testPutTooBigValue() throws IOException {
-    testPutGetDeleteExists((10 << 20) + 1, true, true); // 10 MB + 1
+    testPutGetDeleteExists((10 << 20) + 1 + 4, true, true); // 10 MB + 1
   }
 
-  @Test //(expected = DoNotRetryIOException.class)
+  @Test
   @Category(KnownEmulatorGap.class)
   public void testPutAlmostTooBigValue() throws IOException {
     testPutGetDeleteExists(10 << 20, true, true); // 10 MB
   }
 
-  @Test //(expected = DoNotRetryIOException.class)
+  @Test
   @Category(KnownEmulatorGap.class)
   /** Run a large value ten times for performance logging purposes */
   public void testPutAlmostTooBigValueTenTimes() throws IOException {
@@ -186,7 +186,8 @@ public class TestBasicOps extends AbstractTest {
 
     int valueSize = size;
     if (removeMetadataSize) {
-      int metadataSize =  (20 + testRowKey.length + COLUMN_FAMILY.length + testQualifier.length);
+      // looks like in hbase 2.0 Cell size increased by 4. TODO verify it.
+      int metadataSize =  (20 + 4 + testRowKey.length + COLUMN_FAMILY.length + testQualifier.length);
       valueSize -= metadataSize;
     }
 

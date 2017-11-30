@@ -104,7 +104,11 @@ public class TestAppend extends AbstractTest {
     Append append = new Append(rowKey).add(SharedTestEnvRule.COLUMN_FAMILY, qual, value2);
     append.setReturnResults(false);
     Result result = table.append(append);
-    Assert.assertNull("Should not return result", result);
+    if(result != null) {
+      Assert.assertTrue("Should be empty", result.isEmpty());
+    } else {
+      Assert.assertNull("Should not return result", result);      
+    }
   }
 
   @Test
