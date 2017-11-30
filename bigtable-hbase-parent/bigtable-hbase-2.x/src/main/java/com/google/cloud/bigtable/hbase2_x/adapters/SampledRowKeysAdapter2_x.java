@@ -13,54 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.cloud.bigtable.hbase.adapters;
+package com.google.cloud.bigtable.hbase2_x.adapters;
 
-import com.google.bigtable.v2.SampleRowKeysResponse;
-import com.google.cloud.bigtable.config.Logger;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.HRegionLocation;
 import org.apache.hadoop.hbase.ServerName;
 import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.RegionInfo;
+import org.apache.hadoop.hbase.client.RegionInfoBuilder;
 import org.apache.hadoop.hbase.util.Bytes;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.bigtable.v2.SampleRowKeysResponse;
+import com.google.cloud.bigtable.hbase.adapters.SampledRowKeysAdapter;
 
 /**
- * <p>SampledRowKeysAdapter class.</p>
- *
- * @author sduskis
- * @version $Id: $Id
+ * <p>Pretty much same code as in Hbase 1.x. Needed here as it is not binary compatible with Hbase 2.x.
+ *    Explore better options to avoid dup code. 
+ * </p>
+ * 
+ * @author spollapally
  */
-public class SampledRowKeysAdapter {
-  /** Constant <code>LOG</code> */
-  protected static final Logger LOG = new Logger(SampledRowKeysAdapter.class);
+public class SampledRowKeysAdapter2_x extends SampledRowKeysAdapter {
 
-  protected final TableName tableName;
-  protected final ServerName serverName;
-
-  /**
-   * <p>Constructor for SampledRowKeysAdapter.</p>
-   *
-   * @param tableName a {@link org.apache.hadoop.hbase.TableName} object.
-   * @param serverName a {@link org.apache.hadoop.hbase.ServerName} object.
-   */
-  public SampledRowKeysAdapter(TableName tableName, ServerName serverName) {
-    this.tableName = tableName;
-    this.serverName = serverName;
+  public SampledRowKeysAdapter2_x(TableName tableName, ServerName serverName) {
+    super(tableName, serverName);
   }
-
-  /**
-   * <p>adaptResponse.</p>
-   *
-   * @param responses a {@link java.util.List} object.
-   * @return a {@link java.util.List} object.
-   */
+  
+  @Override
   public List<HRegionLocation> adaptResponse(List<SampleRowKeysResponse> responses) {
-
     List<HRegionLocation> regions = new ArrayList<>();
 
     // Starting by the first possible row, iterate over the sorted sampled row keys and create regions.
@@ -73,7 +57,8 @@ public class SampledRowKeysAdapter {
       if (Bytes.equals(startKey, endKey)) {
         continue;
       }
-      HRegionInfo regionInfo = new HRegionInfo(tableName, startKey, endKey);
+      RegionInfo regionInfo =
+          RegionInfoBuilder.newBuilder(tableName).setStartKey(startKey).setEndKey(endKey).build();
       startKey = endKey;
 
       regions.add(new HRegionLocation(regionInfo, serverName));
@@ -82,7 +67,8 @@ public class SampledRowKeysAdapter {
     // Create one last region if the last region doesn't reach the end or there are no regions.
     byte[] endKey = HConstants.EMPTY_END_ROW;
     if (regions.isEmpty() || !Bytes.equals(startKey, endKey)) {
-      HRegionInfo regionInfo = new HRegionInfo(tableName, startKey, endKey);
+      RegionInfo regionInfo =
+          RegionInfoBuilder.newBuilder(tableName).setStartKey(startKey).setEndKey(endKey).build();
       regions.add(new HRegionLocation(regionInfo, serverName));
     }
     return regions;
