@@ -25,6 +25,7 @@ limitations under the License.
 
   <properties>
      <hbase.version>${hbase.version.2.0}</hbase.version>
+     <compileSource>1.8</compileSource>
   </properties>
 
   <artifactId>bigtable-hbase-2.x</artifactId>
@@ -74,4 +75,20 @@ limitations under the License.
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+	<plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<configuration combine.self="override">
+				<source>${compileSource}</source>
+				<target>${compileSource}</target>
+				<showWarnings>true</showWarnings>
+				<showDeprecation>false</showDeprecation>
+				<compilerArgument>-Xlint:-options</compilerArgument>
+			</configuration>
+		</plugin>
+	</plugins>
+  </build>
 </project>
