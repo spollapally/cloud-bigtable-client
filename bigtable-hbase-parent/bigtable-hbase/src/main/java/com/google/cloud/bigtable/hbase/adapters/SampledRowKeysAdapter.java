@@ -35,7 +35,7 @@ import java.util.List;
  * @author sduskis
  * @version $Id: $Id
  */
-public class SampledRowKeysAdapter {
+public abstract class SampledRowKeysAdapter {
   /** Constant <code>LOG</code> */
   protected static final Logger LOG = new Logger(SampledRowKeysAdapter.class);
 
@@ -76,15 +76,19 @@ public class SampledRowKeysAdapter {
       HRegionInfo regionInfo = new HRegionInfo(tableName, startKey, endKey);
       startKey = endKey;
 
-      regions.add(new HRegionLocation(regionInfo, serverName));
+      regions.add(getHRegionLocation(regionInfo, serverName));
     }
 
     // Create one last region if the last region doesn't reach the end or there are no regions.
     byte[] endKey = HConstants.EMPTY_END_ROW;
     if (regions.isEmpty() || !Bytes.equals(startKey, endKey)) {
       HRegionInfo regionInfo = new HRegionInfo(tableName, startKey, endKey);
-      regions.add(new HRegionLocation(regionInfo, serverName));
+      regions.add(getHRegionLocation(regionInfo, serverName));
     }
     return regions;
   }
+  
+  public abstract HRegionLocation getHRegionLocation(HRegionInfo hRegionInfo,
+      ServerName serverName);
+
 }

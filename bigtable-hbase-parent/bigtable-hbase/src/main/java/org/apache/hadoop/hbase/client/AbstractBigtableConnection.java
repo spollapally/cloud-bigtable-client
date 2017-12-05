@@ -22,7 +22,6 @@ import com.google.cloud.bigtable.grpc.BigtableSession;
 import com.google.cloud.bigtable.grpc.BigtableTableAdminClient;
 import com.google.cloud.bigtable.hbase.BigtableBufferedMutator;
 import com.google.cloud.bigtable.hbase.BigtableOptionsFactory;
-import com.google.cloud.bigtable.hbase.BigtableRegionLocator;
 import com.google.cloud.bigtable.hbase.BigtableTable;
 import com.google.cloud.bigtable.hbase.adapters.Adapters;
 import com.google.cloud.bigtable.hbase.adapters.HBaseRequestAdapter;
@@ -225,31 +224,22 @@ public abstract class AbstractBigtableConnection implements Connection, Closeabl
     return getTable(TableName.valueOf(tableName));
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public RegionLocator getRegionLocator(TableName tableName) throws IOException {
+  public abstract RegionLocator getRegionLocator(TableName tableName) throws IOException;
+  
+  public RegionLocator getCachedLocator(TableName tableName) {
     for (RegionLocator locator : locatorCache) {
       if (locator.getName().equals(tableName)) {
         return locator;
       }
     }
 
-    RegionLocator newLocator =
-        new BigtableRegionLocator(tableName, options, session.getDataClient());
-
-    if (locatorCache.add(newLocator)) {
-      return newLocator;
-    }
-
-    for (RegionLocator locator : locatorCache) {
-      if (locator.getName().equals(tableName)) {
-        return locator;
-      }
-    }
-
-    throw new IllegalStateException(newLocator + " was supposed to be in the cache");
+    return null;
   }
-
+  
+  protected Boolean cacheLocator(TableName tableName, RegionLocator locator)  {
+    return locatorCache.add(locator);
+  }
+  
   /** {@inheritDoc} */
   @Override
   public void abort(final String msg, Throwable t) {
