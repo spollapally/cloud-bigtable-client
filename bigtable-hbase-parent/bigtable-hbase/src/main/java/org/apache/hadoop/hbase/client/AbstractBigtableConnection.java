@@ -82,7 +82,7 @@ public abstract class AbstractBigtableConnection implements Connection, Closeabl
 
   private final Logger LOG = new Logger(getClass());
 
-  protected final Set<RegionLocator> locatorCache = new CopyOnWriteArraySet<>();
+  private final Set<RegionLocator> locatorCache = new CopyOnWriteArraySet<>();
 
   private final Configuration conf;
   private volatile boolean closed = false;
