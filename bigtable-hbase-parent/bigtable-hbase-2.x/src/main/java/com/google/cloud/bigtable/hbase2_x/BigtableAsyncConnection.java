@@ -20,6 +20,8 @@ import org.apache.hadoop.hbase.client.AsyncTableRegionLocator;
 import org.apache.hadoop.hbase.client.RawAsyncTable;
 import org.apache.hadoop.hbase.security.User;
 
+import com.google.cloud.bigtable.hbase.BigtableRegionLocator;
+
 /**
  * @author spollapally
  */
@@ -123,7 +125,7 @@ public class BigtableAsyncConnection implements AsyncConnection, Closeable {
     //BigtableRegionLocator2x regionLocator = new BigtableRegionLocator2x(tableName, connection.getO, connection.getSession().getDataClient());
    //TODO : discuss approach. Will need to consider caching with this approach
     
-    final BigtableRegionLocator2_x regionLocator = null;
+    final BigtableRegionLocator regionLocator = null;
     
     AsyncTableRegionLocator asyncTableRegionLocator = new AsyncTableRegionLocator() {
       

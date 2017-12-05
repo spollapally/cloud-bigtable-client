@@ -19,9 +19,17 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HRegionInfo;
+import org.apache.hadoop.hbase.HRegionLocation;
+import org.apache.hadoop.hbase.ServerName;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.AbstractBigtableConnection;
 import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.RegionLocator;
 import org.apache.hadoop.hbase.security.User;
+
+import com.google.cloud.bigtable.hbase.BigtableRegionLocator;
+import com.google.cloud.bigtable.hbase.adapters.SampledRowKeysAdapter;
 
 /**
  * HBase 1.x specific implementation of {@link AbstractBigtableConnection}.
@@ -51,5 +59,30 @@ public class BigtableConnection extends AbstractBigtableConnection {
   public Admin getAdmin() throws IOException {
     return new BigtableAdmin(getOptions(), getConfiguration(), this, getBigtableTableAdminClient(),
         getDisabledTables());
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public RegionLocator getRegionLocator(TableName tableName) throws IOException {
+    RegionLocator locator = getCachedLocator(tableName);
+    
+    if(locator == null) {
+      locator = new BigtableRegionLocator(tableName, getOptions(), getSession().getDataClient()) {
+        
+        @Override
+        public  SampledRowKeysAdapter getSampledRowKeysAdapter(TableName tableName, ServerName serverName) {
+          return new SampledRowKeysAdapter(tableName, serverName) {
+            
+            @Override
+            public HRegionLocation getHRegionLocation(HRegionInfo hRegionInfo, ServerName serverName) {
+              return new HRegionLocation(hRegionInfo, serverName);
+            }
+          };
+        }
+      };
+      
+      cacheLocator(tableName, locator);
+    }
+    return locator;
   }
 }
