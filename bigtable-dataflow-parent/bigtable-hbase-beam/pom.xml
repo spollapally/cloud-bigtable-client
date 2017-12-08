@@ -16,7 +16,7 @@ limitations under the License.
     <parent>
         <groupId>com.google.cloud.bigtable</groupId>
         <artifactId>bigtable-dataflow-parent</artifactId>
-        <version>1.0.0-pre5-SNAPSHOT</version>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>bigtable-hbase-beam</artifactId>
@@ -38,7 +38,7 @@ limitations under the License.
             <version>${beam.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.google.cloud.bigtable</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>bigtable-hbase-1.x-shaded</artifactId>
             <version>${project.version}</version>
             <exclusions>

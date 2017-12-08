@@ -26,10 +26,12 @@ import com.google.cloud.bigtable.hbase.BigtableRegionLocator;
 import com.google.cloud.bigtable.hbase.BigtableTable;
 import com.google.cloud.bigtable.hbase.adapters.Adapters;
 import com.google.cloud.bigtable.hbase.adapters.HBaseRequestAdapter;
+import com.google.cloud.bigtable.hbase.adapters.SampledRowKeysAdapter;
 import com.google.cloud.bigtable.hbase.adapters.HBaseRequestAdapter.MutationAdapters;
 import com.google.common.base.MoreObjects;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.ServerName;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.BufferedMutator.ExceptionListener;
 import org.apache.hadoop.hbase.security.User;
@@ -83,7 +85,7 @@ public abstract class AbstractBigtableConnection implements Connection, Closeabl
 
   private final Logger LOG = new Logger(getClass());
 
-  private final Set<RegionLocator> locatorCache = new CopyOnWriteArraySet<>();
+  protected final Set<RegionLocator> locatorCache = new CopyOnWriteArraySet<>();
 
   private final Configuration conf;
   private volatile boolean closed = false;
@@ -228,27 +230,39 @@ public abstract class AbstractBigtableConnection implements Connection, Closeabl
   /** {@inheritDoc} */
   @Override
   public RegionLocator getRegionLocator(TableName tableName) throws IOException {
-    for (RegionLocator locator : locatorCache) {
-      if (locator.getName().equals(tableName)) {
-        return locator;
-      }
+    RegionLocator locator = getCachedLocator(tableName);
+
+    if (locator == null) {
+      locator = new BigtableRegionLocator(tableName, getOptions(), getSession().getDataClient()) {
+
+        @Override
+        public SampledRowKeysAdapter getSampledRowKeysAdapter(TableName tableName,
+            ServerName serverName) {
+          return createSampledRowKeysAdapter(tableName, serverName);
+        }
+      };
+
+      locatorCache.add(locator);
     }
-
-    RegionLocator newLocator =
-        new BigtableRegionLocator(tableName, options, session.getDataClient());
-
-    if (locatorCache.add(newLocator)) {
-      return newLocator;
-    }
-
-    for (RegionLocator locator : locatorCache) {
-      if (locator.getName().equals(tableName)) {
-        return locator;
-      }
-    }
-
-    throw new IllegalStateException(newLocator + " was supposed to be in the cache");
+    return locator;
   }
+
+  private RegionLocator getCachedLocator(TableName tableName) {
+    for (RegionLocator locator : locatorCache) {
+      if (locator.getName().equals(tableName)) {
+        return locator;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * There are some hbase 1.x and 2.x incompatibilities which require this abstract method. See
+   * {@link SampledRowKeysAdapter} for more details.
+   */
+  protected abstract SampledRowKeysAdapter createSampledRowKeysAdapter(TableName tableName,
+    ServerName serverName);
 
   /** {@inheritDoc} */
   @Override

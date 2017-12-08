@@ -19,6 +19,7 @@ import com.google.bigtable.v2.SampleRowKeysResponse;
 import com.google.protobuf.ByteString;
 
 import org.apache.hadoop.hbase.HConstants;
+import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.HRegionLocation;
 import org.apache.hadoop.hbase.ServerName;
 import org.apache.hadoop.hbase.TableName;
@@ -33,9 +34,15 @@ import java.util.List;
 
 @RunWith(JUnit4.class)
 public class TestSampledRowKeysAdapter {
-  SampledRowKeysAdapter adapter = new SampledRowKeysAdapter(
-      TableName.valueOf("test"),
-      ServerName.valueOf("host", 123, 0));
+  SampledRowKeysAdapter adapter =
+      new SampledRowKeysAdapter(TableName.valueOf("test"), ServerName.valueOf("host", 123, 0)) {
+
+        @Override
+        public HRegionLocation createHRegionLocation(HRegionInfo hRegionInfo,
+            ServerName serverName) {
+          return new HRegionLocation(hRegionInfo, serverName);
+        }
+      };
 
   @Test
   public void testEmptyRowList() {
